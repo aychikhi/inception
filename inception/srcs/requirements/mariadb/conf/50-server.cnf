@@ -1,0 +1,28 @@
+# MariaDB server Configuration
+[mysqld]
+
+# The user that runs the MariaDB process
+user	= mysql
+
+# Where database files are stored inside the container
+datadir	= /var/lib/mysql
+
+# Listen on all interfaces so WordPress containser can connect
+# By default MariaDB only listens on localhost - we need to change this
+bind-address	= 0.0.0.0
+
+# The port MariaDB listens on
+port	= 3306
+
+# Unix socket for local connections
+socket	= /run/mysql/mysql.sock
+
+# PID file location
+pid-file	= /run/mysql/mysql.pid
+
+# Default character set - utf8mb4 supports all Unicode including emojis
+character-set-server	= utf8mb4
+collation-server	=utf8mb4_general_ci
+
+# Error log location
+log_error	= /var/log/mysql/error.log
