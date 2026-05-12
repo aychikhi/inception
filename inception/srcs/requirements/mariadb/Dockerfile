@@ -20,8 +20,8 @@ RUN chmod +x /start.sh
 
 # Create necessary directories and set permissions
 # MariaDB needs these directories to exist with correct ownership
-RUN mkdir -p /run/mysqld /var/lib/mysql /var/log/mysql 
-	&& chown -R mysql:mysql /run/mysqld /var/lib/mysql /var/log/mysql \
+RUN mkdir -p /run/mysqld /var/lib/mysql /var/log/mysql \
+	&& chown -R mysql:mysql /run/mysqld /var/lib/mysql /var/log/mysql
 
 # MariaDB listens on port 3306
 EXPOSE 3306

@@ -1,30 +1,64 @@
-#variables
-COMPOSE_FILE = srcs/docker-compose.yml
-DATA_DIR = $(HOME)/data
+# Inception Makefile
 
-# Default target - builds and starts everything
-all:
-	@mkdir -p $(DATA_DIR)/wordpress $(DATA_DIR)/mariadb
+COMPOSE_FILE	= srcs/docker-compose.yml
+DATA_DIR		= $(HOME)/data
+
+# MAIN TARGETS
+
+# Default: create data dirs + build + start everything
+all: $(DATA_DIR)/wordpress $(DATA_DIR)/mariadb
+	@echo ">>> Building and starting all services..."
 	@docker compose -f $(COMPOSE_FILE) up -d --build
+	@echo ">>> Infrastructure is running!"
+	@echo ">>> Visit: https://$(shell grep DOMAIN_NAME srcs/.env | cut -d= -f2)"
 
-# Stop containers (keep data)
+# Create data directories
+$(DATA_DIR)/wordpress:
+	@mkdir -p $(DATA_DIR)/wordpress
+
+$(DATA_DIR)/mariadb:
+	@mkdir -p $(DATA_DIR)/mariadb
+
+# Stop containers (keep images and volumes)
 down:
+	@echo ">>> Stopping all services..."
 	@docker compose -f $(COMPOSE_FILE) down
 
-# Stop + remove containers, images, volumes
+# Stop + remove containers and images (keep volumes/data)
 clean: down
-	@docker compose -f $(COMPOSE_FILE) down --rmi all --volumes
-	@rm -rf $(DATA_DIR)/wordpress $(DATA_DIR)/mariadb
+	@echo ">>> Removing containers and images..."
+	@docker compose -f $(COMPOSE_FILE) down --rmi all
+
+# Full clean including volumes and data
+fclean: clean
+	@echo ">>> Removing all data volumes..."
+	@docker compose -f $(COMPOSE_FILE) down --volumes
+	@sudo rm -rf $(DATA_DIR)/wordpress $(DATA_DIR)/mariadb
+	@echo ">>> Full clean complete"
 
 # Full rebuild
-re: clean all
+re: fclean all
 
-# Show running containers
+# UTILITY TARGETS
+
+# Show container status
 status:
 	@docker compose -f $(COMPOSE_FILE) ps
 
-# Show logs
+# Follow logs from all containers
 logs:
 	@docker compose -f $(COMPOSE_FILE) logs -f
 
-.PHONY: all down clean re status logs
+# Follow logs from one service: make log s=nginx
+log:
+	@docker compose -f $(COMPOSE_FILE) logs -f $(s)
+
+# Open a shell inside a container: make shell s=wordpress
+shell:
+	@docker compose -f $(COMPOSE_FILE) exec $(s) bash
+
+# Show all Docker images
+images:
+	@docker images
+
+.PHONY: all down clean fclean re status logs log shell images

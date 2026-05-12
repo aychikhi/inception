@@ -1,7 +1,7 @@
 -- This script runs once when MariaDB initializes for the script time
 
 -- Remove anonymos users (security best practice)
-DELETE FROM mmysql.user WHERE User='';
+DELETE FROM mysql.user WHERE User='';
 
 -- Remove the best database
 DROP DATABASE IF EXISTS test;

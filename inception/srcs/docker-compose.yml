@@ -1,0 +1,171 @@
+# docker-compose.yml
+# Version is not needed in modern Docker Compose (v2+)
+
+# ============================================================
+# SECRETS
+# Docker reads these files and mounts them inside containers
+# at /run/secrets/<secret_name>
+# ============================================================
+secrets:
+  db_password:
+    file: ../secrets/db_password.txt
+  db_root_password:
+    file: ../secrets/db_root_password.txt
+  credentials:
+    file: ../secrets/credentials.txt
+
+# ============================================================
+# VOLUMES
+# Named volumes that persist data on the host machine
+# Data is stored at /home/yourlogin/data/
+# ============================================================
+volumes:
+  wordpress:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/${USER}/data/wordpress
+
+  mariadb:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/${USER}/data/mariadb
+
+# ============================================================
+# NETWORKS
+# Private network that all containers share
+# Containers talk to each other using service names as hostnames
+# ============================================================
+networks:
+  inception:
+    driver: bridge
+
+# ============================================================
+# SERVICES
+# Each service = one container
+# ============================================================
+services:
+
+  # ----------------------------------------------------------
+  # MARIADB — The Database
+  # ----------------------------------------------------------
+  mariadb:
+    # Build from our Dockerfile
+    build:
+      context: requirements/mariadb
+      dockerfile: Dockerfile
+
+    # Container name (also its hostname on the Docker network)
+    container_name: mariadb
+
+    # Image name (must match service name per subject)
+    image: mariadb
+
+    # Restart automatically if container crashes
+    restart: always
+
+    # Mount the mariadb volume at the data directory
+    volumes:
+      - mariadb:/var/lib/mysql
+
+    # Which secrets this container can access
+    # They appear as files at /run/secrets/
+    secrets:
+      - db_password
+      - db_root_password
+
+    # Environment variables from .env file
+    environment:
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+
+    # Connect to the inception network
+    networks:
+      - inception
+
+    # Health check — Docker will check if MariaDB is running
+    # Other containers can use 'depends_on' with condition
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "--silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ----------------------------------------------------------
+  # WORDPRESS — The Website + PHP Engine
+  # ----------------------------------------------------------
+  wordpress:
+    build:
+      context: requirements/wordpress
+      dockerfile: Dockerfile
+
+    container_name: wordpress
+    image: wordpress
+
+    restart: always
+
+    # Mount the wordpress volume at the WP files directory
+    volumes:
+      - wordpress:/var/www/wordpress
+
+    secrets:
+      - db_password
+      - credentials
+
+    # Environment variables WordPress startup script needs
+    environment:
+      - DOMAIN_NAME=${DOMAIN_NAME}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - WP_ADMIN_USER=${WP_ADMIN_USER}
+      - WP_ADMIN_EMAIL=${WP_ADMIN_EMAIL}
+      - WP_USER=${WP_USER}
+      - WP_USER_EMAIL=${WP_USER_EMAIL}
+
+    networks:
+      - inception
+
+    # WordPress DEPENDS on MariaDB being healthy before starting
+    # This prevents WordPress from trying to install before DB is ready
+    depends_on:
+      mariadb:
+        condition: service_healthy
+
+  # ----------------------------------------------------------
+  # NGINX — The Front Door
+  # ----------------------------------------------------------
+  nginx:
+    build:
+      context: requirements/nginx
+      dockerfile: Dockerfile
+
+    container_name: nginx
+    image: nginx
+
+    restart: always
+
+    # Mount wordpress volume so NGINX can serve static files directly
+    # (images, CSS, JS don't need to go through PHP)
+    volumes:
+      - wordpress:/var/www/wordpress
+
+    # NGINX needs the domain name to configure the server_name
+    environment:
+      - DOMAIN_NAME=${DOMAIN_NAME}
+
+    networks:
+      - inception
+
+    # NGINX depends on WordPress being up
+    depends_on:
+      - wordpress
+
+    # Port mapping: host:container
+    # This is the ONLY port exposed to the outside world
+    # All traffic enters through port 443 (HTTPS)
+    ports:
+      - "443:443"

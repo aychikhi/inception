@@ -5,6 +5,10 @@ set -e
 
 echo ">>> starting MariaDB set..."
 
+# Make sure runtime directories exist
+mkdir -p /run/mysqld
+chown -R mysql:mysql /run/mysqld
+
 # --- Read passwords from Docker secrets ---
 # Docker secrets are mounted as files at /run/secrets/
 # We read them into variables
@@ -16,12 +20,12 @@ echo ">>> Secrets loaded successfully"
 # --- Check if this is the first time running ---
 # /var/lib/mysql is created during initialization
 # If if doesn't exits, we need to initialize the database
-if [ ! -d "/var/lib/mysql/mysql" ]; then
+if [ ! -d "/var/lib/mysql/wordpress" ]; then
 	echo ">>> First run detected - initializing database..."
 
 	# Create required runtime directories
-	mkidir -p /run/mysql
-	chown -R mysql:mysql /run/mysql
+	mkdir -p /run/mysqld
+	chown -R mysql:mysql /run/mysqld
 	chown -R mysql:mysql /var/lib/mysql
 
 	# Initialize the MariaDB data directory
@@ -30,22 +34,23 @@ if [ ! -d "/var/lib/mysql/mysql" ]; then
 
 	echo ">>> Database directory initialized"
 
-	# Replace the password placeholder in our SQL script
-	# with the actual password from secrets 
-	sed -i "s/PLACEHOLDER_WP_PASSWORD/${DB_PASSWORD}/g" /init.sql
+	# Generate the initialization script securely with environment variables
+	cat << EOF > /tmp/init.sql
+FLUSH PRIVILEGES;
+DELETE FROM mysql.user WHERE User='';
+DROP DATABASE IF EXISTS test;
+DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
+CREATE DATABASE IF NOT EXISTS wordpress CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+CREATE USER IF NOT EXISTS 'wpuser'@'%' IDENTIFIED BY '${DB_PASSWORD}';
+GRANT ALL PRIVILEGES ON wordpress.* TO 'wpuser'@'%';
+ALTER USER 'root'@'localhost' IDENTIFIED BY '${DB_ROOT_PASSWORD}';
+FLUSH PRIVILEGES;
+EOF
 
 	# Start MariaDB temporarily in the backgroud
 	# --bootstrap mode processes SQL without networking
 	# We use this to run our initialization SQL
-	mysql --user=mysql --bootstrap < /init.sql
-
-	# Now set the root password
-	# we do this separately because it needs special handling
-	mysqld --user=mysql --bootstrap << EOF
-USE msql;
-ALTER USER 'root'@'localhost' IDENTIFIED BY '${DB_ROOT_PASSWORD}'
-FLUSH PRIVILEGES;
-EOF
+	mysqld --user=mysql --bootstrap < /tmp/init.sql
 
 	echo ">>> Database initialized successfully"
 	echo ">>> Database: wordpress"
