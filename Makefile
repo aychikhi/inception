@@ -7,10 +7,8 @@ DATA_DIR		= $(HOME)/data
 
 # Default: create data dirs + build + start everything
 all: $(DATA_DIR)/wordpress $(DATA_DIR)/mariadb
-	@echo ">>> Building and starting all services..."
+	@mkdir -p $(DATA_DIR)/redis
 	@docker compose -f $(COMPOSE_FILE) up -d --build
-	@echo ">>> Infrastructure is running!"
-	@echo ">>> Visit: https://$(shell grep DOMAIN_NAME srcs/.env | cut -d= -f2)"
 
 # Create data directories
 $(DATA_DIR)/wordpress:

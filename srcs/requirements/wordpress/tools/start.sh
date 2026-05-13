@@ -119,6 +119,33 @@ if [ ! -f "/var/www/wordpress/wp-login.php" ]; then
     find /var/www/wordpress -type d -exec chmod 755 {} \;
     find /var/www/wordpress -type f -exec chmod 644 {} \;
 
+# --- Install and configure Redis cache plugin ---
+    echo ">>> Installing Redis cache plugin..."
+
+    # Install the Redis Object Cache plugin
+    wp plugin install redis-cache \
+        --allow-root \
+        --path=/var/www/wordpress \
+        --activate
+
+    # Tell WordPress where Redis lives
+    # Add Redis config to wp-config.php
+    wp config set WP_REDIS_HOST redis \
+        --allow-root \
+        --path=/var/www/wordpress
+
+    wp config set WP_REDIS_PORT 6379 \
+        --allow-root \
+        --path=/var/www/wordpress \
+        --raw
+
+    # Enable the Redis object cache
+    wp redis enable \
+        --allow-root \
+        --path=/var/www/wordpress
+
+    echo ">>> Redis cache configured"
+
     echo ">>> WordPress setup complete!"
 
 else

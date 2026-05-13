@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>yourlogin | 42 Portfolio</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #00ff41;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 20px #00ff41;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 10px #00ff41; }
+            to   { text-shadow: 0 0 30px #00ff41, 0 0 60px #00ff41; }
+        }
+
+        p {
+            font-size: 1.2rem;
+            margin: 0.5rem 0;
+            color: #88ff99;
+        }
+
+        .project {
+            margin-top: 2rem;
+            padding: 1rem;
+            border: 1px solid #00ff41;
+            display: inline-block;
+            min-width: 300px;
+        }
+
+        .project h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stack {
+            margin-top: 1.5rem;
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            padding: 0.3rem 0.8rem;
+            border: 1px solid #00ff41;
+            font-size: 0.9rem;
+            color: #00ff41;
+        }
+
+        .cursor {
+            display: inline-block;
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>yourlogin<span class="cursor">_</span></h1>
+        <p>42 Student | System Administration</p>
+        <p>Casablanca, Morocco</p>
+
+        <div class="project">
+            <h2>[ Inception ]</h2>
+            <p>Docker infrastructure project</p>
+            <p>NGINX · WordPress · MariaDB</p>
+        </div>
+
+        <div class="stack">
+            <span class="badge">Docker</span>
+            <span class="badge">Linux</span>
+            <span class="badge">NGINX</span>
+            <span class="badge">MariaDB</span>
+            <span class="badge">WordPress</span>
+            <span class="badge">TLS 1.3</span>
+        </div>
+    </div>
+</body>
+</html>
