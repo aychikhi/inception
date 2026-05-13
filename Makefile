@@ -31,7 +31,7 @@ clean: down
 fclean: clean
 	@echo ">>> Removing all data volumes..."
 	@docker compose -f $(COMPOSE_FILE) down --volumes
-	@sudo rm -rf $(DATA_DIR)/wordpress $(DATA_DIR)/mariadb
+	@sudo rm -rf $(DATA_DIR)/wordpress $(DATA_DIR)/mariadb $(DATA_DIR)/redis
 	@echo ">>> Full clean complete"
 
 # Full rebuild
