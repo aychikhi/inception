@@ -36,6 +36,8 @@ volumes:
       type: none
       o: bind
       device: /home/${USER}/data/mariadb
+  portainer_data:
+    driver: local
 
 # ============================================================
 # NETWORKS
@@ -246,3 +248,18 @@ services:
       - "8080:8080"
     depends_on:
       - mariadb
+
+  portainer:
+    build:
+      context: requirements/bonus/portainer
+      dockerfile: Dockerfile
+    container_name: portainer
+    image: portainer
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    ports:
+      - "9000:9000"
+    networks:
+      - inception
