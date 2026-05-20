@@ -1,21 +1,17 @@
 FROM debian:bookworm
 
-# Install NGINX + PHP-FPM (Adminer is a PHP app)
 RUN apt-get update && apt-get install -y \
-    nginx \
-    php-fpm \
-    php-mysql \
-    curl \
+    nginx php-fpm php-mysql curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy NGINX config for Adminer
-COPY conf/adminer.conf /etc/nginx/sites-available/default
+# Download Adminer at BUILD time using direct GitHub URL
+RUN mkdir -p /var/www/adminer && \
+    curl -L -o /var/www/adminer/index.php \
+    https://github.com/vrana/adminer/releases/download/v4.8.1/adminer-4.8.1.php
 
-# Copy startup script
+COPY conf/adminer.conf /etc/nginx/sites-available/default
 COPY tools/start.sh /start.sh
 RUN chmod +x /start.sh
 
-# Adminer runs on port 8080
 EXPOSE 8080
-
 CMD ["/start.sh"]
