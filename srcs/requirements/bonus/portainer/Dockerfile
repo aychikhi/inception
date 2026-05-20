@@ -10,5 +10,5 @@ RUN curl -L https://github.com/portainer/portainer/releases/download/2.19.4/port
 COPY tools/start.sh /start.sh
 RUN chmod +x /start.sh
 
-EXPOSE 9443
+EXPOSE 9000
 CMD ["/start.sh"]

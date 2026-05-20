@@ -20,22 +20,19 @@ secrets:
 # Data is stored at /home/yourlogin/data/
 # ============================================================
 volumes:
-  redis:
-    driver: local
-
   wordpress:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /home/${USER}/data/wordpress
+      device: /home/aychikhi/data/wordpress
 
   mariadb:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /home/${USER}/data/mariadb
+      device: /home/aychikhi/data/mariadb
   portainer_data:
     driver: local
 

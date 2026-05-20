@@ -1,13 +1,12 @@
 # Inception Makefile
 
-COMPOSE_FILE	= srcs/docker-compose.yml
-DATA_DIR		= $(HOME)/data
+COMPOSE_FILE    = srcs/docker-compose.yml
+DATA_DIR        = /home/aychikhi/data
 
 # MAIN TARGETS
 
 # Default: create data dirs + build + start everything
 all: $(DATA_DIR)/wordpress $(DATA_DIR)/mariadb
-	@mkdir -p $(DATA_DIR)/redis
 	@docker compose -f $(COMPOSE_FILE) up -d --build
 
 # Create data directories
@@ -31,7 +30,7 @@ clean: down
 fclean: clean
 	@echo ">>> Removing all data volumes..."
 	@docker compose -f $(COMPOSE_FILE) down --volumes
-	@sudo rm -rf $(DATA_DIR)/wordpress $(DATA_DIR)/mariadb $(DATA_DIR)/redis
+	@sudo rm -rf $(DATA_DIR)/wordpress $(DATA_DIR)/mariadb
 	@echo ">>> Full clean complete"
 
 # Full rebuild
