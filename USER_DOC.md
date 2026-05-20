@@ -1,43 +1,43 @@
 # User Documentation
 
-This guide will explain how to interact with the Inception project stack as an end user or system administrator.
+This guide will show you how to use and manage the Inception project.
 
 ## Services Provided
-- **Wordpress**: A fully functional content management system available via the browser.
-- **MariaDB**: The relational database ensuring WordPress state and content persistency.
-- **NGINX**: The single web entrypoint handling incoming HTTPS connections to forward traffic safely.
-- **Adminer** (Bonus): A web-based database management interface.
-- **Static Website** (Bonus): A showcase portfolio website.
-- **Redis Cache** (Bonus): An object cache mechanism to speed up WordPress response times.
-- **FTP Server** (Bonus): Provides secure file transfer capabilities for managing WordPress files.
-- **Portainer** (Bonus): A visual Docker management dashboard for monitoring containers, volumes, and logs.
+- **Wordpress**: The main website, available in your browser.
+- **MariaDB**: The database that stores the website's data.
+- **NGINX**: The web server that handles the HTTPS connections.
+- **Adminer** (Bonus): A web panel to manage the database easily.
+- **Static Website** (Bonus): A simple static portfolio page.
+- **Redis Cache** (Bonus): Object caching to make WordPress faster.
+- **FTP Server** (Bonus): Secure file transfer for WordPress files.
+- **Portainer** (Bonus): A web dashboard to see your Docker containers and logs.
 
 ## Starting and Stopping the Project
-Use the Makefile commands at the root of the project to manage the lifecycle:
-- Start all services: Run `make` or `make all`.
-- Stop and gracefully shut down containers: Run `make down`.
-- Stop and remove the containers, keeping your volume data: Run `make clean`.
-- Wipe everything out, including database and website volume data: Run `make fclean`.
+You can control everything using the `Makefile` in the root folder:
+- To build and start everything: `make` or `make all`
+- To stop the containers safely: `make down`
+- To stop and remove containers (but keep the data): `make clean`
+- To completely delete containers, images, and empty all the volume data: `make fclean`
 
 ## Accessing the Website and Administration Panel
-Once running:
-- The main WordPress Website is accessible at: `https://aychikhi.42.fr`
-- The WordPress Administration Panel is accessible at: `https://aychikhi.42.fr/wp-admin/`
-- The Adminer Database Panel is accessible at: `http://aychikhi.42.fr:8080`
-- The Static Website is accessible at: `http://aychikhi.42.fr:8081`
-- The Portainer Dashboard is accessible at: `http://aychikhi.42.fr:9000`
+Once you run `make`, you can access the services here:
+- WordPress Website: `https://aychikhi.42.fr`
+- WordPress Admin Panel: `https://aychikhi.42.fr/wp-admin/`
+- Adminer Database Panel: `http://aychikhi.42.fr:8080`
+- Static Website: `http://aychikhi.42.fr:8081`
+- Portainer Dashboard: `http://aychikhi.42.fr:9000`
 
-**Note**: Since NGINX uses a self-signed TLS certificate, your browser will warn you of a security risk when accessing WordPress. Click "Advanced" and choose "Accept the Risk and Continue" to proceed.
+**Note**: NGINX uses a self-signed SSL certificate, so your browser will give you a security warning. Just click "Advanced" and proceed to the website. 
 
-> **Important**: Adminer, Static Website, and Portainer use plain HTTP — always open them directly in a new tab by typing the full URL including `http://` to avoid your browser automatically upgrading the connection to HTTPS.
+> **Important**: Adminer, the Static site, and Portainer run on normal HTTP, so make sure to explicitly type `http://` so your browser doesn't force it to HTTPS.
 
 ## Locating and Managing Credentials
-Credentials are not stored in image layers. Instead, they are securely managed via files:
-- All sensitive credentials (passwords for WP, DB, Admin) are kept inside the `secrets/` directory in plain text files.
-- During container startup, these files are read by initialization scripts.
-- You can manage your environment structure through `srcs/.env` for non-sensitive configurations (like the `DOMAIN_NAME` and usernames).
+We don't hardcode passwords in any of the Dockerfiles. 
+- All sensitive passwords (for the database and WordPress admin) need to be stored inside the `secrets/` directory as basic text files.
+- When the containers start, they safely read these files once.
+- Other normal settings (like usernames or your domain) are configured in the `srcs/.env` file.
 
 ## Checking Service Health
-To ensure all the services are running without crashing or looping:
-- Container Status: Run `make status` to list all containers and check if their status is `Up` and `healthy`.
-- Service Logs: Run `make logs` to tail the logs of all running containers in real-time, or `docker logs <container_name>` (e.g. `docker logs wordpress`) to verify a specific service.
+If something seems broken:
+- Run `make status` to see if all containers are listed as `Up` and `healthy`.
+- Run `make logs` to see the output from all containers. If you just want to see logs for one container, you can use `docker logs wordpress` or `docker logs mariadb` to figure out what's wrong.
