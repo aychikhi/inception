@@ -10,6 +10,7 @@ This guide will explain how to interact with the Inception project stack as an e
 - **Static Website** (Bonus): A showcase portfolio website.
 - **Redis Cache** (Bonus): An object cache mechanism to speed up WordPress response times.
 - **FTP Server** (Bonus): Provides secure file transfer capabilities for managing WordPress files.
+- **Portainer** (Bonus): A visual Docker management dashboard for monitoring containers, volumes, and logs.
 
 ## Starting and Stopping the Project
 Use the Makefile commands at the root of the project to manage the lifecycle:
@@ -22,14 +23,18 @@ Use the Makefile commands at the root of the project to manage the lifecycle:
 Once running:
 - The main WordPress Website is accessible at: `https://aychikhi.42.fr`
 - The WordPress Administration Panel is accessible at: `https://aychikhi.42.fr/wp-admin/`
-- The Adminer Database Panel is securely attached and available via: `https://aychikhi.42.fr:8080` or the explicitly configured ports.
+- The Adminer Database Panel is accessible at: `http://aychikhi.42.fr:8080`
+- The Static Website is accessible at: `http://aychikhi.42.fr:8081`
+- The Portainer Dashboard is accessible at: `http://aychikhi.42.fr:9000`
 
-**Note**: Since NGINX uses a self-signed TLS certificate, your browser will warn you of a security risk. Click "Advanced" and choose "Accept the Risk and Continue" to proceed.
+**Note**: Since NGINX uses a self-signed TLS certificate, your browser will warn you of a security risk when accessing WordPress. Click "Advanced" and choose "Accept the Risk and Continue" to proceed.
+
+> **Important**: Adminer, Static Website, and Portainer use plain HTTP — always open them directly in a new tab by typing the full URL including `http://` to avoid your browser automatically upgrading the connection to HTTPS.
 
 ## Locating and Managing Credentials
 Credentials are not stored in image layers. Instead, they are securely managed via files:
-- All sensitive credentials (passwords for WP, DB, Admin) are kept inside the `secrets/` directory in plain text files. 
-- During container startup, these files are read by initialization scripts. 
+- All sensitive credentials (passwords for WP, DB, Admin) are kept inside the `secrets/` directory in plain text files.
+- During container startup, these files are read by initialization scripts.
 - You can manage your environment structure through `srcs/.env` for non-sensitive configurations (like the `DOMAIN_NAME` and usernames).
 
 ## Checking Service Health
