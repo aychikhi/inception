@@ -1,32 +1,60 @@
-*This project has been created as part of the 42 curriculum by aychikhi.*
+# 42 Inception
 
-## Description
-Inception is a system administration project about Docker and docker-compose. The goal of this project is to build a small infrastructure from scratch using Docker, without pulling any ready-made images. It runs on a Virtual Machine and sets up a WordPress site with PHP-FPM, a MariaDB database, and an NGINX web server over HTTPS (using TLSv1.2 or TLSv1.3). I also added some bonus services.
+Welcome to my **Inception** repository, a comprehensive system administration and Docker infrastructure project from the 42 curriculum.
 
-## Instructions
-1. Make sure your `/etc/hosts` file points `aychikhi.42.fr` to `127.0.0.1` or your local IP.
-2. The `Makefile` will automatically create the folders for the volumes in `/home/aychikhi/data`.
-3. Create your `.env` file in the `srcs` folder and make sure you put your `credentials.txt`, `db_password.txt`, and `db_root_password.txt` inside the `secrets/` directory.
-4. Run `make` in the root of the project to build and start everything.
-5. Open your browser and go to `https://aychikhi.42.fr` to see the site. Since the SSL certificate is self-signed, you will need to accept the browser warning to proceed.
+## Overview
+This project focuses on broadening fundamental knowledge of system administration by deploying a complete web infrastructure using **Docker** and **Docker Compose**. The goal is to virtualize an entire infrastructure from scratch (using Debian or Alpine as base images) inside a Virtual Machine. Pulling ready-made application images (like `nginx:latest` or `wordpress:latest`) is strictly forbidden, meaning every service is built manually via custom Dockerfiles.
 
-## Resources
-- [Docker Official Docs](https://docs.docker.com/)
-- [NGINX Documentation](https://nginx.org/en/docs/)
-- [MariaDB Knowledge Base](https://mariadb.com/kb/en/documentation/)
-- [WordPress Support](https://wordpress.org/support/)
-- I didn't use any AI tools to write the code or documentation for this project.
+The entire architecture runs on a dedicated Docker network and uses Docker volumes for persistent data storage.
 
-## Project description
+## Architecture & Services
+The project uses a multi-container Docker Compose setup. It includes a mandatory core web stack, enriched with several bonus administrative and caching services:
 
-### Virtual Machines vs Docker
-Virtual Machines install a complete Operating System (guest OS) on top of the host, which makes them heavy and slow to start. Docker, on the other hand, uses containers that share the host kernel. This means Docker containers are much lighter, take up less space, and start almost instantly.
+### Mandatory Services
+1. **NGINX**: The sole entry point for the infrastructure, accepting only secure HTTPS connections (TLSv1.2 or TLSv1.3).
+2. **WordPress + PHP-FPM**: The content management system, running isolated from the web server and configured automatically.
+3. **MariaDB**: The relational database used to store WordPress user and site data.
 
-### Secrets vs Environment Variables
-You can pass passwords using environment variables, but anyone who inspects the container can see them easily. Docker secrets are much safer because they mount the sensitive data as files in memory (like `/run/secrets/`), so they aren't exposed in the container's environment setup.
+### Bonus Services
+1. **Redis**: An in-memory data structure store used as an object cache backend for WordPress to increase performance.
+2. **FTP Server (vsftpd)**: An FTP service that grants direct access to the WordPress volume for managing files easily.
+3. **Adminer**: A lightweight database management interface (in a single PHP file) to visually inspect and manage MariaDB.
+4. **Portainer**: A powerful graphical UI to monitor, manage, and inspect the running Docker containers, networks, and volumes.
+5. **Static Website**: A standalone, secondary static website built with HTML/CSS/JS, running in its own container to demonstrate routing.
 
-### Docker Network vs Host Network
-Using the host network means the container uses the machine's actual network directly, which isn't very secure. By creating a custom Docker network, we create a private bridge. The containers can talk to each other inside this network using their names (like `mariadb:3306`), and the outside world can't access them unless we expose specific ports (like 443 for NGINX).
+## Project Structure
+```text
+.
+└── inception/
+    ├── Makefile             # Automates building, deploying, and cleaning up
+    ├── srcs/
+    │   ├── docker-compose.yml
+    │   ├── .env             # Environment variables for Compose configurations
+    │   └── requirements/    # Dockerfiles, configurations, and scripts for all distinct services
+    └── secrets/             # Contains initial text configurations (credentials)
+```
 
-### Docker Volumes vs Bind Mounts
-Bind mounts link an exact folder on the host to a folder in the container, which depends heavily on the host OS. Docker named volumes are managed directly by Docker. For this project, we are required to use named volumes, but we used the local driver to specify exactly where the data is stored (`/home/login/data/`) to fulfill the subject rules.
+## Setup & Deployment
+To run this project locally:
+
+1. Map the required domain name to localhost in your `/etc/hosts` file:
+   ```bash
+   127.0.0.1 aychikhi.42.fr
+   ```
+2. Navigate to the `inception/` directory:
+   ```bash
+   cd inception
+   ```
+3. Build and launch the infrastructure using the provided Makefile:
+   ```bash
+   make
+   ```
+   *The Makefile will automatically set up the required local data storage directories (e.g., `/home/aychikhi/data/`), build the custom Docker images, and launch the stack in detached mode.*
+
+4. Access the main site in your browser at `https://aychikhi.42.fr`. Since the SSL certificate is self-signed, you will need to accept the browser warning to proceed.
+5. To shut down the infrastructure and clean up resources, run:
+   ```bash
+   make fclean
+   ```
+
+*Note: For the shorter 42 subject-specific documentation, see `inception/README.md`.*
